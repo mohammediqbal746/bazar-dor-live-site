@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.api-store.workers.dev/api/bazardor';
+const BASE_URL = 'https://openapi.programming-hero.com/api/bazardor';
 
 export async function getAllProducts() {
   const res = await fetch(`${BASE_URL}/products`, { cache: 'no-store' });
