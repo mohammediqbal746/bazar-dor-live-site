@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, TrendingUp } from 'lucide-react';
-import { useParams } from 'next/navigation';
 
 interface Product {
   _id: string;
@@ -28,7 +27,6 @@ const formatSlug = (slug: string) => {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
-// স্মার্ট ডিকশনারিতে আলু, পেঁয়াজ, ডিম ইত্যাদি যোগ করা হলো
 const fallbackData: Record<string, { name: string; category: string; unit: string; icon: string }> = {
   'batam-size-chal': { name: 'বাটাম সাইজ চাল', category: 'চাল', unit: 'কেজি', icon: '🍚' },
   'nazir-chal': { name: 'নাজির চাল', category: 'চাল', unit: 'কেজি', icon: '🍚' },
@@ -39,13 +37,13 @@ const fallbackData: Record<string, { name: string; category: string; unit: strin
   'moshur-dal': { name: 'মসুর ডাল', category: 'ডাল', unit: 'কেজি', icon: '🥣' },
   'chola': { name: 'ছোলা', category: 'ডাল', unit: 'কেজি', icon: '🥣' },
   'alu': { name: 'আলু', category: 'সবজি', unit: 'কেজি', icon: '🥔' },
-  'piyaj': { name: 'পেঁয়াজ', category: 'মসলা', unit: 'কেজি', icon: '🧅' },
+  'piyaj': { name: 'পেঁয়াজ', category: 'মসলা', unit: 'কেজি', icon: '🧅' },
   'dim': { name: 'ডিম', category: 'ডিম-দুধ', unit: 'হালি', icon: '🥚' },
   'kacha-morich': { name: 'কাঁচা মরিচ', category: 'সবজি', unit: 'কেজি', icon: '🌶️' }
 };
 
-export default function ProductDetails() {
-  const params = useParams();
+// useParams এর বদলে params প্রপ রিসিভ করা হলো
+export default function ProductDetails({ params }: { params: { slug: string } }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -83,7 +81,7 @@ export default function ProductDetails() {
     return <div className="min-h-[60vh] flex justify-center items-center text-green-600 font-medium">লোড হচ্ছে...</div>;
   }
 
-  const slugString = params.slug as string;
+  const slugString = params.slug;
   const fallback = fallbackData[slugString];
 
   const productName = product?.nameBn || fallback?.name || product?.name || product?.title || formatSlug(slugString);
@@ -97,9 +95,9 @@ export default function ProductDetails() {
   const icon = fallback?.icon || '🛒';
 
   const dummyMarkets = [
-    { marketName: 'টঙ্গী বাজার', location: 'ময়মনসিংহ', lowest: safeLowest, highest: safeHighest - 2, average: safeAverage - 1 },
+    { marketName: 'টঙ্গী বাজার', location: 'ময়মনসিংহ', lowest: safeLowest, highest: safeHighest - 2, average: safeAverage - 1 },
     { marketName: 'বনানী বাজার', location: 'রাজশাহী', lowest: safeLowest + 2, highest: safeHighest - 1, average: safeAverage + 1 },
-    { marketName: 'কারওয়ান বাজার', location: 'ঢাকা', lowest: safeLowest + 5, highest: safeHighest, average: safeAverage + 3 },
+    { marketName: 'কারওয়ান বাজার', location: 'ঢাকা', lowest: safeLowest + 5, highest: safeHighest, average: safeAverage + 3 },
     { marketName: 'মহাখালী বাজার', location: 'রাজশাহী', lowest: safeLowest + 1, highest: safeHighest - 3, average: safeAverage - 2 },
     { marketName: 'মিরপুর ১, ঢাকা', location: 'ঢাকা', lowest: safeLowest, highest: safeHighest - 4, average: safeAverage - 3 },
   ];
@@ -126,7 +124,7 @@ export default function ProductDetails() {
             <div className="flex flex-col gap-2.5">
               <h1 className="text-[40px] leading-none font-bold text-gray-900 tracking-tight">{productName}</h1>
               <p className="text-gray-500 text-[18px]">প্রতি {safeUnit} · {categoryName}</p>
-              <p className="text-gray-800 text-[18px] mt-1">গতকালের তুলনায় আজ দাম বেড়েছে · ২ টাকা</p>
+              <p className="text-gray-800 text-[18px] mt-1">গতকালের তুলনায় আজ দাম বেড়েছে · ২ টাকা</p>
             </div>
           </div>
 
@@ -153,7 +151,7 @@ export default function ProductDetails() {
           </div>
           
           <div className="bg-white p-6 rounded-[20px] border border-gray-100 shadow-sm">
-            <p className="text-gray-800 text-[17px] font-medium mb-3">গড় দাম</p>
+            <p className="text-gray-800 text-[17px] font-medium mb-3">গড় দাম</p>
             <div className="flex items-baseline gap-2 mb-1">
               <span className="text-[40px] font-bold text-[#3B82F6] leading-none">{toBnNum(Math.round(safeAverage))}</span>
               <span className="text-[22px] font-bold text-[#3B82F6]">টাকা</span>
@@ -181,7 +179,7 @@ export default function ProductDetails() {
                   <th className="px-8 py-5 font-normal">অবস্থান</th>
                   <th className="px-8 py-5 font-normal text-center">সর্বনিম্ন</th>
                   <th className="px-8 py-5 font-normal text-center">সর্বোচ্চ</th>
-                  <th className="px-8 py-5 font-normal text-right">গড়</th>
+                  <th className="px-8 py-5 font-normal text-right">গড়</th>
                 </tr>
               </thead>
               <tbody className="text-gray-800 text-[16px]">

@@ -9,6 +9,8 @@ export interface Product {
   id: number;
   slug: string;
   nameBn: string;
+  name?: string;
+  icon?: string;
   category: string;
   categoryNameBn: string;
   categoryIcon: string;

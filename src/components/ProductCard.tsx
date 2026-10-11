@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Product } from '../types';
+import { Product } from '../lib/types';
 
 // ইংরেজি সংখ্যাকে বাংলায় কনভার্ট করার ফাংশন
 const toBengaliNumber = (num: number | string) => {

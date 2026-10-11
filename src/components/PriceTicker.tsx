@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Marquee from 'react-fast-marquee';
 import { getAllProducts } from '../lib/api';
-import { Product } from '../types';
+import { Product } from '../lib/types';
 
 export default function PriceTicker() {
   const [products, setProducts] = useState<Product[]>([]);

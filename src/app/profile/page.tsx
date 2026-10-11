@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { authClient } from '@/lib/auth-client';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -27,13 +28,14 @@ export default function ProfilePage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
+    const toastId = toast.loading('আপডেট হচ্ছে...');
 
     try {
       await authClient.updateUser({ name: name });
-      alert('প্রোফাইল সফলভাবে আপডেট হয়েছে!');
+      toast.success('প্রোফাইল সফলভাবে আপডেট হয়েছে!', { id: toastId });
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'আপডেট করতে সমস্যা হয়েছে');
+      toast.error(error instanceof Error ? error.message : 'আপডেট করতে সমস্যা হয়েছে', { id: toastId });
     } finally {
       setIsUpdating(false);
     }

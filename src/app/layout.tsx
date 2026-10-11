@@ -1,29 +1,33 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import Navbar from "@/components/Navbar";
-import { Toaster } from "react-hot-toast";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
+import './globals.css';
+import Navbar from '@/components/Navbar';
+import PriceTicker from '@/components/PriceTicker';
+import Footer from '@/components/Footer';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "বাজার দর | Bazar Dor",
-  description: "প্রয়োজনীয় পণ্যের দাম এক নজরে।",
+  title: 'Bazar Dor - বাজার দর',
+  description: 'প্রতিদিনের বাজার দর এক নজরে',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="bn" data-theme="light">
-      <body className={`${inter.className} bg-slate-50 min-h-screen flex flex-col`}>
+    <html lang="bn">
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
         <Navbar />
-        <main className="flex-grow max-w-6xl mx-auto w-full p-4">
+        <PriceTicker />
+        <main className="flex-grow">
           {children}
         </main>
-        <Toaster position="top-center" reverseOrder={false} />
+        <Footer />
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

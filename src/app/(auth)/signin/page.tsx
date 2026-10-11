@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react'; // Github মুছে দেওয়া হয়েছে
+import { ShoppingCart } from 'lucide-react'; 
 import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
+// এখানে CategoryInfo এর বদলে Category ইমপোর্ট করা হলো
+import { Product, Category } from '@/lib/types';
 
 const toBnNum = (num: number | string | undefined) => {
   if (num === undefined || num === null) return '০';
@@ -22,7 +23,7 @@ const getUnitBn = (unit: string) => {
   return units[unit?.toLowerCase()] || `প্রতি ${unit}`;
 };
 
-const ProductCard = ({ product }: { product: any }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   const isUp = product.change?.dir === 'up';
   const isDown = product.change?.dir === 'down';
   const changeColor = isUp ? 'text-green-600 bg-green-50' : isDown ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-50';
@@ -33,7 +34,7 @@ const ProductCard = ({ product }: { product: any }) => {
     <Link href={`/product/${product.slug}`} className="block bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-green-200 group">
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 bg-gray-50 flex items-center justify-center rounded-xl text-3xl group-hover:scale-110 transition-transform">
-          {product.image || product.categoryIcon || '🛒'}
+          {product.icon || product.image || product.categoryIcon || '🛒'}
         </div>
         <div>
           <h3 className="font-bold text-gray-900 text-lg">{product.nameBn || product.name}</h3>
@@ -53,12 +54,12 @@ const ProductCard = ({ product }: { product: any }) => {
   );
 };
 
-export default function CategoryPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+export default function CategoryPage({ params }: { params: { slug: string } }) {
+  const slug = params?.slug;
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [categoryInfo, setCategoryInfo] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  // এখানেও Category ব্যবহার করা হলো
+  const [categoryInfo, setCategoryInfo] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('default');
 
@@ -104,7 +105,8 @@ export default function CategoryPage() {
         <div className="h-10 w-48 bg-gray-200 rounded-lg animate-pulse mb-8"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 h-[160px] animate-pulse flex flex-col justify-between">
+           
+            <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 h-40 animate-pulse flex flex-col justify-between">
               <div className="flex gap-4">
                 <div className="w-14 h-14 bg-gray-200 rounded-xl"></div>
                 <div className="space-y-2 flex-1 pt-1">

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Product } from '@/lib/types';
 
 const toBnNum = (num: number | string | undefined) => {
   if (num === undefined || num === null) return '০';
@@ -19,7 +20,7 @@ const getUnitBn = (unit: string) => {
   return units[unit?.toLowerCase()] || `প্রতি ${unit}`;
 };
 
-const ProductCard = ({ product }: { product: any }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   const isUp = product.change?.dir === 'up';
   const isDown = product.change?.dir === 'down';
   const changeColor = isUp ? 'text-green-600 bg-green-50' : isDown ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-50';
@@ -139,7 +140,7 @@ export default async function Home() {
           </div>
           {products.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product: any) => (
+              {products.map((product: Product) => (
                 <ProductCard key={product.id || product.slug} product={product} />
               ))}
             </div>
