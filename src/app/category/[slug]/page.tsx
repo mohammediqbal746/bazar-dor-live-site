@@ -78,7 +78,8 @@ export default function CategoryPage() {
     <div className="pt-6">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 border-b pb-4">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          {category?.icon || '🛒'} {category?.name || 'ক্যাটাগরি'}
+          {/* এখানে nameBn যুক্ত করা হয়েছে */}
+          {category?.icon || '🛒'} {category?.nameBn || category?.name || 'ক্যাটাগরি'}
         </h1>
         
         <div className="flex items-center gap-2">

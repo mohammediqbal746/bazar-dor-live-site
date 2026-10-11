@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getAllProducts } from '@/lib/api';
-import { Product, Market } from '@/types'; // <-- এখানে Market ইমপোর্ট করা হয়েছে
+import { Product, Market } from '@/types';
 
 // ইংরেজি সংখ্যাকে বাংলায় কনভার্ট করার ফাংশন
 const toBengaliNumber = (num: number | string) => {
@@ -48,7 +48,6 @@ export default function ProductDetails() {
   let maxPrice = Number(product.today);
   
   if (product.markets && product.markets.length > 0) {
-    // <-- এখানে any এর বদলে Market ব্যবহার করা হয়েছে
     const minPrices = product.markets.map((m: Market) => Number(m.min));
     const maxPrices = product.markets.map((m: Market) => Number(m.max));
     minPrice = Math.min(...minPrices);
@@ -95,7 +94,6 @@ export default function ProductDetails() {
       
       {product.markets && product.markets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* <-- এখানেও any এর বদলে Market ব্যবহার করা হয়েছে */}
           {product.markets.map((market: Market, index: number) => (
             <div key={index} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
               <div>
