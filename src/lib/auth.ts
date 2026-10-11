@@ -12,4 +12,15 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: false,
     },
+    // গিটহাব এবং গুগল সোশ্যাল লগিন যুক্ত করা হলো
+    socialProviders: {
+        github: {
+            clientId: process.env.GITHUB_CLIENT_ID as string,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+        },
+        google: {
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        }
+    }
 });
