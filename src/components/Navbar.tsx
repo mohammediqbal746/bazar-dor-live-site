@@ -94,9 +94,14 @@ function NavbarContent() {
                 </button>
               </div>
             ) : (
-              <Link href="/signin" className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors">
-                লগিন করুন
-              </Link>
+             <div className="flex items-center gap-2">
+                <Link href="/signin" className="text-gray-700 hover:text-green-600 font-medium px-4 py-2 text-sm transition-colors">
+                  সাইন ইন
+                </Link>
+                <Link href="/signup" className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                  সাইন আপ
+                </Link>
+              </div>
             )
           )}
         </div>
