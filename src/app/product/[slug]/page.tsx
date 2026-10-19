@@ -47,35 +47,35 @@ export default function ProductDetails({ params }: { params: { slug: string } })
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`https://openapi.programming-hero.com/api/bazardor`);
+        const res = await fetch('https://openapi.programming-hero.com/api/bazardor');
         const data = await res.json();
-        
         const productsList = data.data || data;
-        
+
         if (Array.isArray(productsList)) {
-          const matchedProduct = productsList.find((p: Product) => 
-            p.slug === params.slug || 
-            p._id === params.slug || 
+          const matchedProduct = productsList.find((p: Product) =>
+            p.slug === params.slug ||
+            p._id === params.slug ||
             (p.name && p.name.toLowerCase().replace(/ /g, '-') === params.slug)
           );
           setProduct(matchedProduct || null);
         } else {
-          setProduct(productsList);
+          setProduct(null);
         }
-      } catch (err) {
-        console.error("Error fetching product:", err);
+      } catch (error) {
+        console.error("Data fetch error:", error);
+        setProduct(null);
       } finally {
+        // এই লাইনটি সবচেয়ে জরুরি! এটি না থাকলে সারাজীবন লোডিং দেখাবে
         setLoading(false);
       }
     };
 
-    if (params?.slug) {
-      fetchProduct();
-    }
-  }, [params?.slug]);
+    // ফাংশনটি কল করা হলো
+    fetchProduct();
+  }, [params.slug]);
 
   if (loading) {
     return <div className="min-h-[60vh] flex justify-center items-center text-green-600 font-medium">লোড হচ্ছে...</div>;

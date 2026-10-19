@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-// এখানে CategoryInfo এর বদলে Category ইমপোর্ট করা হলো
 import { Product, Category } from '@/lib/types';
 
 const toBnNum = (num: number | string | undefined) => {
@@ -11,7 +10,8 @@ const toBnNum = (num: number | string | undefined) => {
   return num.toString().replace(/\d/g, (d) => bnDigits[parseInt(d)]);
 };
 
-const getUnitBn = (unit: string) => {
+const getUnitBn = (unit: string | undefined) => {
+  if (!unit) return '';
   const units: Record<string, string> = {
     'kg': 'প্রতি কেজি',
     'l': 'প্রতি লিটার',
@@ -20,7 +20,7 @@ const getUnitBn = (unit: string) => {
     'piece': 'প্রতি পিস',
     'gm': 'প্রতি গ্রাম'
   };
-  return units[unit?.toLowerCase()] || `প্রতি ${unit}`;
+  return units[unit.toLowerCase()] || `প্রতি ${unit}`;
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
@@ -31,7 +31,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const pct = product.change?.pct || 0;
 
   return (
-    <Link href={`/product/${product.slug}`} className="block bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-green-200 group">
+    <Link href={`/product/${product.slug || product.id}`} className="block bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-green-200 group">
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 bg-gray-50 flex items-center justify-center rounded-xl text-3xl group-hover:scale-110 transition-transform">
           {product.icon || product.image || product.categoryIcon || '🛒'}
@@ -58,7 +58,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   const slug = params?.slug;
 
   const [products, setProducts] = useState<Product[]>([]);
-  // এখানেও Category ব্যবহার করা হলো
+  // any type remove kora holo, ebar strict type thakbe
   const [categoryInfo, setCategoryInfo] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('default');
@@ -67,18 +67,36 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [catRes, prodRes] = await Promise.all([
-          fetch(`https://openapi.programming-hero.com/api/bazardor/categories/${slug}`),
-          fetch(`https://openapi.programming-hero.com/api/bazardor/products?category=${slug}`)
-        ]);
+        const res = await fetch('https://openapi.programming-hero.com/api/bazardor');
+        const data = await res.json();
+        
+        // Data ke properly type cast kora holo
+        const allItems: Product[] = data?.data || data || [];
 
-        const catData = await catRes.json();
-        const prodData = await prodRes.json();
+        // filter er vitore 'any' er bodole 'Product' type use kora holo jate error na ashe
+        const categoryProducts = allItems.filter((p: Product) => 
+          p.category === slug || p.category?.toLowerCase() === slug
+        );
 
-        setCategoryInfo(catData?.data || catData || null);
-        setProducts(Array.isArray(prodData) ? prodData : (prodData?.data || []));
+        setProducts(categoryProducts);
+
+        if (categoryProducts.length > 0) {
+          const firstItem = categoryProducts[0];
+          setCategoryInfo({
+            id: slug,
+            slug: slug,
+            name: slug,
+            nameBn: firstItem.category|| firstItem.category || slug,
+            icon: firstItem.icon || firstItem.icon || '🛒'
+          } as Category);
+        } else {
+          setCategoryInfo(null);
+        }
+
       } catch (error) {
-        console.error(error);
+        console.error("Data fetching error:", error);
+        setProducts([]);
+        setCategoryInfo(null);
       } finally {
         setLoading(false);
       }
@@ -105,7 +123,6 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         <div className="h-10 w-48 bg-gray-200 rounded-lg animate-pulse mb-8"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-           
             <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 h-40 animate-pulse flex flex-col justify-between">
               <div className="flex gap-4">
                 <div className="w-14 h-14 bg-gray-200 rounded-xl"></div>
@@ -128,7 +145,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     );
   }
 
-  if (!products.length || (!categoryInfo?.nameBn && !categoryInfo?.name)) {
+  if (!products.length || !categoryInfo) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
         <div className="text-6xl mb-4">🛒</div>
@@ -145,7 +162,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     <div className="max-w-6xl mx-auto px-4 py-12 min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <span className="text-4xl">{categoryInfo.icon}</span> 
+          <span className="text-4xl">{categoryInfo.icon || '🛒'}</span> 
           {categoryInfo.nameBn || categoryInfo.name}
         </h1>
 
