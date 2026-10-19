@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+// Next.js এর নিজস্ব হুক ইমপোর্ট করা হলো
+import { useParams } from 'next/navigation';
 import { Product, Category } from '@/lib/types';
 
 const toBnNum = (num: number | string | undefined) => {
@@ -54,11 +56,12 @@ const ProductCard = ({ product }: { product: Product }) => {
   );
 };
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
-  const slug = params?.slug;
+export default function CategoryPage() {
+  // params প্রপসের বদলে useParams হুক ব্যবহার করা হলো
+  const params = useParams();
+  const slug = params?.slug as string;
 
   const [products, setProducts] = useState<Product[]>([]);
-  // any type remove kora holo, ebar strict type thakbe
   const [categoryInfo, setCategoryInfo] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('default');
@@ -70,10 +73,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         const res = await fetch('https://openapi.programming-hero.com/api/bazardor');
         const data = await res.json();
         
-        // Data ke properly type cast kora holo
         const allItems: Product[] = data?.data || data || [];
 
-        // filter er vitore 'any' er bodole 'Product' type use kora holo jate error na ashe
         const categoryProducts = allItems.filter((p: Product) => 
           p.category === slug || p.category?.toLowerCase() === slug
         );
@@ -102,7 +103,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       }
     };
 
-    if (slug) fetchData();
+  
+    fetchData();
   }, [slug]);
 
   const getSortedProducts = () => {
