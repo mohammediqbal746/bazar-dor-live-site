@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-// Next.js এর নিজস্ব হুক ইমপোর্ট করা হলো
-import { useParams } from 'next/navigation';
 import { Product, Category } from '@/lib/types';
 
 const toBnNum = (num: number | string | undefined) => {
@@ -56,10 +54,9 @@ const ProductCard = ({ product }: { product: Product }) => {
   );
 };
 
-export default function CategoryPage() {
-  // params প্রপসের বদলে useParams হুক ব্যবহার করা হলো
-  const params = useParams();
-  const slug = params?.slug as string;
+// useParams() বাদ দিয়ে সরাসরি params প্রপস রিসিভ করা হলো
+export default function CategoryPage({ params }: { params: { slug: string } }) {
+  const slug = params?.slug;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categoryInfo, setCategoryInfo] = useState<Category | null>(null);
@@ -87,8 +84,8 @@ export default function CategoryPage() {
             id: slug,
             slug: slug,
             name: slug,
-            nameBn: firstItem.category|| firstItem.category || slug,
-            icon: firstItem.icon || firstItem.icon || '🛒'
+            nameBn: firstItem.categoryBn || firstItem.category || slug,
+            icon: firstItem.categoryIcon || firstItem.icon || '🛒'
           } as Category);
         } else {
           setCategoryInfo(null);
@@ -103,7 +100,7 @@ export default function CategoryPage() {
       }
     };
 
-  
+    // ফাংশনটি সরাসরি কল করা হলো
     fetchData();
   }, [slug]);
 
