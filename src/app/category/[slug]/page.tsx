@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Product, Category } from '@/lib/types';
 
 const toBnNum = (num: number | string | undefined) => {
@@ -23,15 +24,31 @@ const getUnitBn = (unit: string | undefined) => {
   return units[unit.toLowerCase()] || `প্রতি ${unit}`;
 };
 
-const ProductCard = ({ product }: { product: Product }) => {
+const categoryMapping: Record<string, string[]> = {
+  'chal': ['চাল', 'chal', 'rice'],
+  'dal': ['ডাল', 'dal', 'lentil'],
+  'tel': ['তেল', 'tel', 'oil'],
+  'sobji': ['সবজি', 'sobji', 'vegetable'],
+  'mach': ['মাছ', 'mach', 'fish'],
+  'mangsho': ['মাংস', 'mangsho', 'meat', 'beef', 'chicken', 'mutton', 'গরু', 'মুরগি'],
+  'dim-dudh': ['ডিম', 'দুধ', 'dim', 'dudh', 'egg', 'milk'],
+  'dim-dui': ['ডিম', 'দুধ', 'dim', 'dudh', 'egg', 'milk'],
+  'mosla': ['মসলা', 'মশলা', 'mosla', 'moshla', 'spice'],
+  'moshla': ['মসলা', 'মশলা', 'mosla', 'moshla', 'spice']
+};
+
+type ExtendedProduct = Product & { _id?: string; averagePrice?: number; lowestPrice?: number };
+
+const ProductCard = ({ product }: { product: ExtendedProduct }) => {
   const isUp = product.change?.dir === 'up';
   const isDown = product.change?.dir === 'down';
   const changeColor = isUp ? 'text-green-600 bg-green-50' : isDown ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-50';
   const changeIcon = isUp ? '▲' : isDown ? '▼' : '—';
   const pct = product.change?.pct || 0;
+  const currentPrice = product.today || product.averagePrice || product.lowestPrice;
 
   return (
-    <Link href={`/product/${product.slug || product.id}`} className="block bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-green-200 group">
+    <Link href={`/product/${product.slug || product.id || product._id}`} className="block bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-green-200 group">
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 bg-gray-50 flex items-center justify-center rounded-xl text-3xl group-hover:scale-110 transition-transform">
           {product.icon || product.image || product.categoryIcon || '🛒'}
@@ -44,7 +61,7 @@ const ProductCard = ({ product }: { product: Product }) => {
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
         <div>
           <p className="text-xs text-gray-400 mb-1">আজকের দাম</p>
-          <p className="font-bold text-lg text-gray-900">{toBnNum(product.today)} টাকা</p>
+          <p className="font-bold text-lg text-gray-900">{toBnNum(currentPrice)} টাকা</p>
         </div>
         <div className={`px-2.5 py-1 rounded-lg font-semibold text-sm flex items-center gap-1 ${changeColor}`}>
           {changeIcon} {toBnNum(pct)}%
@@ -54,43 +71,54 @@ const ProductCard = ({ product }: { product: Product }) => {
   );
 };
 
-// useParams() বাদ দিয়ে সরাসরি params প্রপস রিসিভ করা হলো
-export default function CategoryPage({ params }: { params: { slug: string } }) {
-  const slug = params?.slug;
+function CategoryPageContent() {
+  const params = useParams();
+  const slug = (params?.slug as string)?.toLowerCase() || '';
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ExtendedProduct[]>([]);
   const [categoryInfo, setCategoryInfo] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('default');
 
   useEffect(() => {
+    if (!slug) return;
+
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch('https://openapi.programming-hero.com/api/bazardor');
+        const res = await fetch('https://openapi.programming-hero.com/api/bazardor/products');
         const data = await res.json();
         
-        const allItems: Product[] = data?.data || data || [];
+        const dataValues = [data, data?.data, data?.products, ...(typeof data === 'object' ? Object.values(data) : [])];
+        const allItems = dataValues.find(Array.isArray) || [];
 
-        const categoryProducts = allItems.filter((p: Product) => 
-          p.category === slug || p.category?.toLowerCase() === slug
-        );
+        const searchKeywords = categoryMapping[slug] || [slug];
+
+        const categoryProducts = allItems.filter((p: any) => {
+          if (!p) return false;
+          return searchKeywords.some(keyword => JSON.stringify(p).toLowerCase().includes(keyword));
+        });
 
         setProducts(categoryProducts);
 
         if (categoryProducts.length > 0) {
           const firstItem = categoryProducts[0];
+          const defaultBnNames: Record<string, string> = {
+            dim: 'ডিম-দুধ', mach: 'মাছ', chal: 'চাল', dal: 'ডাল', tel: 'তেল', sobji: 'সবজি', mangsho: 'মাংস', mosla: 'মসলা'
+          };
+          
+          const matchedKey = Object.keys(defaultBnNames).find(key => slug.includes(key));
+          
           setCategoryInfo({
             id: slug,
             slug: slug,
             name: slug,
-            nameBn: firstItem.categoryBn || firstItem.category || slug,
-            icon: firstItem.categoryIcon || firstItem.icon || '🛒'
-          } as Category);
+            nameBn: firstItem.categoryNameBn || firstItem.category?.nameBn || (matchedKey ? defaultBnNames[matchedKey] : slug),
+            icon: firstItem.categoryIcon || firstItem.icon || firstItem.category?.icon || '🛒'
+          });
         } else {
           setCategoryInfo(null);
         }
-
       } catch (error) {
         console.error("Data fetching error:", error);
         setProducts([]);
@@ -100,21 +128,15 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       }
     };
 
-    // ফাংশনটি সরাসরি কল করা হলো
     fetchData();
   }, [slug]);
 
-  const getSortedProducts = () => {
-    const sorted = [...products];
-    if (sortOrder === 'asc') {
-      sorted.sort((a, b) => (a.today || 0) - (b.today || 0));
-    } else if (sortOrder === 'desc') {
-      sorted.sort((a, b) => (b.today || 0) - (a.today || 0));
-    }
-    return sorted;
-  };
-
-  const sortedProducts = getSortedProducts();
+  const sortedProducts = [...products].sort((a, b) => {
+    const getPrice = (item: ExtendedProduct) => item.today || item.averagePrice || item.lowestPrice || 0;
+    if (sortOrder === 'asc') return getPrice(a) - getPrice(b);
+    if (sortOrder === 'desc') return getPrice(b) - getPrice(a);
+    return 0;
+  });
 
   if (loading) {
     return (
@@ -189,9 +211,19 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedProducts.map((product) => (
-          <ProductCard key={product.id || product.slug} product={product} />
+          <ProductCard key={product.id || product.slug || product._id} product={product} />
         ))}
       </div>
     </div>
+  );
+}
+
+export default function CategoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex justify-center items-center text-green-600 font-medium">লোড হচ্ছে...</div>
+    }>
+      <CategoryPageContent />
+    </Suspense>
   );
 }

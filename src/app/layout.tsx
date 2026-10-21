@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="bn">
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
+    <html lang="bn" suppressHydrationWarning>
+      <body className={`${inter.className} flex flex-col min-h-screen suppressHydrationWarning`}>
         <Navbar />
         <PriceTicker />
         <main className="flex-grow">

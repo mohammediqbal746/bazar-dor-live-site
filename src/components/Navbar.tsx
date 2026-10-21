@@ -22,13 +22,10 @@ function NavbarContent() {
   const userName = session?.user?.name || "User";
   const userImage = session?.user?.image || `https://ui-avatars.com/api/?name=${userName}&background=16a34a&color=fff`;
 
-  // মাউন্টেড স্টেট আপডেট
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  // ক্যাটাগরি ফেচ করার জন্য
   useEffect(() => {
     getCategories()
       .then(data => {
@@ -37,7 +34,6 @@ function NavbarContent() {
       .catch(err => console.error(err));
   }, []);
 
-  // ইফেক্টের বাইরে সরাসরি ডেট ফরম্যাট
   const currentDate = mounted ? new Intl.DateTimeFormat('bn-BD', {
     year: 'numeric',
     month: 'long',
@@ -58,7 +54,6 @@ function NavbarContent() {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
-        {/* লোগো এবং তারিখ */}
         <Link href="/" className="flex items-center gap-3">
           <div className="w-12 h-12 bg-green-600 text-white rounded-xl flex items-center justify-center text-2xl shadow-sm">
             <ShoppingCart size={24} />
@@ -69,7 +64,6 @@ function NavbarContent() {
           </div>
         </Link>
 
-        {/* ইউজার মেনু / লগিন বাটন */}
         <div className="flex items-center gap-4">
           {!isPending && (
             isLoggedIn ? (
@@ -107,7 +101,6 @@ function NavbarContent() {
         </div>
       </div>
 
-      {/* ক্যাটাগরি মেনু */}
       <div className="border-t border-gray-100 bg-gray-50/50">
         <div className="max-w-6xl mx-auto px-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-6 py-3 whitespace-nowrap text-sm font-medium">
@@ -135,7 +128,6 @@ function NavbarContent() {
   );
 }
 
-// Suspense দিয়ে র‍্যাপ করে এক্সপোর্ট করা হলো
 export default function Navbar() {
   return (
     <Suspense fallback={<header className="bg-white border-b border-gray-200 sticky top-0 z-50 h-[100px]"></header>}>

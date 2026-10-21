@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ChevronRight, TrendingUp } from 'lucide-react';
 
 interface Product {
@@ -42,23 +43,28 @@ const fallbackData: Record<string, { name: string; category: string; unit: strin
   'kacha-morich': { name: 'কাঁচা মরিচ', category: 'সবজি', unit: 'কেজি', icon: '🌶️' }
 };
 
-// useParams এর বদলে params প্রপ রিসিভ করা হলো
-export default function ProductDetails({ params }: { params: { slug: string } }) {
+function ProductDetailsContent() {
+  const params = useParams();
+  const slugString = (params?.slug as string) || '';
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
+  useEffect(() => {
+    if (!slugString) return;
+
     const fetchProduct = async () => {
       try {
-        const res = await fetch('https://openapi.programming-hero.com/api/bazardor');
+        setLoading(true);
+        const res = await fetch('https://openapi.programming-hero.com/api/bazardor/products');
         const data = await res.json();
         const productsList = data.data || data;
 
         if (Array.isArray(productsList)) {
           const matchedProduct = productsList.find((p: Product) =>
-            p.slug === params.slug ||
-            p._id === params.slug ||
-            (p.name && p.name.toLowerCase().replace(/ /g, '-') === params.slug)
+            p.slug === slugString ||
+            p._id === slugString ||
+            (p.name && p.name.toLowerCase().replace(/ /g, '-') === slugString)
           );
           setProduct(matchedProduct || null);
         } else {
@@ -68,22 +74,18 @@ export default function ProductDetails({ params }: { params: { slug: string } })
         console.error("Data fetch error:", error);
         setProduct(null);
       } finally {
-        // এই লাইনটি সবচেয়ে জরুরি! এটি না থাকলে সারাজীবন লোডিং দেখাবে
         setLoading(false);
       }
     };
 
-    // ফাংশনটি কল করা হলো
     fetchProduct();
-  }, [params.slug]);
+  }, [slugString]);
 
-  if (loading) {
-    return <div className="min-h-[60vh] flex justify-center items-center text-green-600 font-medium">লোড হচ্ছে...</div>;
+  if (loading || !slugString) {
+    return null; // Suspense এর fallback লোডিং দেখাবে
   }
 
-  const slugString = params.slug;
   const fallback = fallbackData[slugString];
-
   const productName = product?.nameBn || fallback?.name || product?.name || product?.title || formatSlug(slugString);
   const categoryName = product?.category?.nameBn || fallback?.category || product?.category?.name || 'ক্যাটাগরি';
   const categorySlug = product?.category?.slug || 'all';
@@ -199,5 +201,14 @@ export default function ProductDetails({ params }: { params: { slug: string } })
 
       </div>
     </div>
+  );
+}
+
+// 🟢 পুরো কম্পোনেন্টটিকে Suspense দিয়ে মুড়িয়ে দেওয়া হলো
+export default function ProductDetails() {
+  return (
+    <Suspense fallback={<div className="min-h-[60vh] flex justify-center items-center text-green-600 font-medium">লোড হচ্ছে...</div>}>
+      <ProductDetailsContent />
+    </Suspense>
   );
 }

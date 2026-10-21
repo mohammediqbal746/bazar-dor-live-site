@@ -16,6 +16,19 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // Apnar idea onujayi sob domain allow kore deya holo
+ images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com', // গুগলের সব ছবির জন্য
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com', // গিটহাবের জন্য
+      },
+    ],
+  },
 };
 
 export default nextConfig;
