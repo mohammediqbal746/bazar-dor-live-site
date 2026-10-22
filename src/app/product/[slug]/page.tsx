@@ -2,8 +2,10 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ChevronRight, TrendingUp } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
+import { toast } from 'react-toastify';
 
 interface Product {
   _id: string;
@@ -45,10 +47,22 @@ const fallbackData: Record<string, { name: string; category: string; unit: strin
 
 function ProductDetailsContent() {
   const params = useParams();
+  const router = useRouter();
   const slugString = (params?.slug as string) || '';
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const { data: session, isPending: authPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!authPending && !session?.user && !isRedirecting) {
+      setIsRedirecting(true);
+      toast.error('প্রোডাক্টের বিস্তারিত দেখতে অনুগ্রহ করে লগইন করুন!');
+      router.push('/signin');
+    }
+  }, [session, authPending, router, isRedirecting]);
 
   useEffect(() => {
     if (!slugString) return;
@@ -81,8 +95,25 @@ function ProductDetailsContent() {
     fetchProduct();
   }, [slugString]);
 
-  if (loading || !slugString) {
-    return null; // Suspense এর fallback লোডিং দেখাবে
+  if (loading || authPending || isRedirecting || !slugString) {
+    return (
+      <div className="bg-[#F8FAF9] min-h-screen pb-12">
+        <div className="max-w-5xl mx-auto px-4 py-8 animate-pulse">
+          <div className="h-6 w-64 bg-gray-200 rounded mb-8"></div>
+          <div className="h-40 bg-gray-200 rounded-[24px] w-full mb-10"></div>
+          <div className="h-8 w-48 bg-gray-200 rounded mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="h-32 bg-gray-200 rounded-[20px]"></div>
+            <div className="h-32 bg-gray-200 rounded-[20px]"></div>
+            <div className="h-32 bg-gray-200 rounded-[20px]"></div>
+          </div>
+        </div>
+      </div>
+    ); 
+  }
+
+  if (!session?.user) {
+    return null;
   }
 
   const fallback = fallbackData[slugString];
@@ -204,7 +235,6 @@ function ProductDetailsContent() {
   );
 }
 
-// 🟢 পুরো কম্পোনেন্টটিকে Suspense দিয়ে মুড়িয়ে দেওয়া হলো
 export default function ProductDetails() {
   return (
     <Suspense fallback={<div className="min-h-[60vh] flex justify-center items-center text-green-600 font-medium">লোড হচ্ছে...</div>}>
